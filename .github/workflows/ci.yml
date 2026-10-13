@@ -1,4 +1,4 @@
-name: Website CI
+name: Website CI/CD
 
 on:
   push:
@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   test:
-    name: Run Website Tests
+    name: Test Website
     runs-on: ubuntu-latest
 
     steps:
@@ -27,3 +27,29 @@ jobs:
 
       - name: Run automated tests
         run: python -m unittest test_site -v
+
+  deploy:
+    name: Deploy to Amazon S3
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials using OIDC
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Upload website HTML
+        run: aws s3 cp index.html "s3://${{ vars.S3_BUCKET_NAME }}/index.html" --content-type "text/html"
+
+      - name: Upload website CSS
+        run: aws s3 cp styles.css "s3://${{ vars.S3_BUCKET_NAME }}/styles.css" --content-type "text/css"
