@@ -1,6 +1,15 @@
-
+# Python generated files
 __pycache__/
 *.py[cod]
+
+# Local environments and secrets
 .env
 .venv/
 venv/
+
+# Local AWS configuration and policy files
+.bucket-name
+s3-deploy-policy.json
+trust-policy.json
+bucket-policy.json
+distribution-config.json
